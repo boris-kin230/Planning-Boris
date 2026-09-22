@@ -2,1287 +2,926 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="theme-color" content="#007A33">
-<meta name="description" content="Mission Control — planning journalier interactif">
-<title>Mission Control · Planning TPM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#00843D">
+<title>Boris — Planning des missions</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@600;700;800&display=swap');
-
 :root{
- --green:#007A33;--green2:#00B14F;--deep:#032B1A;--ink:#11231A;
- --muted:#6C7B72;--bg:#F2F7F4;--card:#FFFFFF;--line:#DCE7E0;
- --yellow:#FFF0A3;--yellow-soft:#FFF9D9;--blue:#DCEBFF;--mint:#E5F6EC;
- --red:#FFDADA;--shadow:0 24px 70px rgba(2,44,24,.11);
- --radius:22px;
+  --green:#00843D;
+  --green-dark:#006b31;
+  --green-deep:#004f25;
+  --green-soft:#e9f7ef;
+  --yellow:#ffd83d;
+  --yellow-soft:#fff7c7;
+  --yellow-border:#e9bd00;
+  --ink:#12251b;
+  --muted:#6d7d74;
+  --line:#dfe8e2;
+  --surface:#ffffff;
+  --surface-2:#f5f8f6;
+  --shadow:0 18px 55px rgba(0,67,35,.12);
+  --radius:22px;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
- margin:0;color:var(--ink);background:
- radial-gradient(circle at 8% 0,#DDF5E6 0,transparent 25%),
- radial-gradient(circle at 94% 10%,#E5F1FF 0,transparent 22%),
- var(--bg);
- font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
- overflow-x:hidden;
-}
-body::after{
- content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;
- background-image:linear-gradient(#007A3308 1px,transparent 1px),linear-gradient(90deg,#007A3308 1px,transparent 1px);
- background-size:40px 40px;z-index:-1;
+  margin:0;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 10% 0%,rgba(0,132,61,.10),transparent 28%),
+    radial-gradient(circle at 90% 10%,rgba(255,216,61,.12),transparent 24%),
+    linear-gradient(180deg,#f8fbf9 0%,#eef4f0 100%);
+  min-height:100vh;
 }
 button,input,textarea,select{font:inherit}
 button{cursor:pointer}
-::-webkit-scrollbar{width:9px;height:9px}
-::-webkit-scrollbar-thumb{background:#B9C9C0;border-radius:99px}
-::-webkit-scrollbar-track{background:transparent}
-
-/* ───────────────── HEADER ───────────────── */
 .topbar{
- height:74px;position:sticky;top:0;z-index:100;
- display:flex;align-items:center;justify-content:space-between;
- padding:0 clamp(14px,3vw,42px);
- background:#FFFFFFE8;backdrop-filter:blur(22px);
- border-bottom:1px solid #007A3312;
+  position:sticky;top:0;z-index:50;
+  height:72px;padding:0 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(255,255,255,.82);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(0,80,40,.08);
 }
-.brand{display:flex;align-items:center;gap:12px;font-family:Manrope;font-weight:800;letter-spacing:-.04em}
+.brand{display:flex;align-items:center;gap:13px;font-weight:900;letter-spacing:-.03em}
 .logo{
- width:44px;height:44px;border-radius:50%;
- display:grid;place-items:center;color:#fff;font-size:21px;
- background:linear-gradient(145deg,#009047,#00662D);
- box-shadow:0 9px 28px #007A3340;position:relative;overflow:hidden;
+  width:42px;height:42px;border-radius:50%;
+  display:grid;place-items:center;
+  background:var(--green);color:white;
+  font-size:20px;font-weight:950;
+  box-shadow:0 8px 24px rgba(0,132,61,.28);
+  animation:logoPulse 4s ease-in-out infinite;
 }
-.logo::after{
- content:"";position:absolute;width:72px;height:72px;border:1px solid #ffffff40;
- border-radius:50%;animation:spin 12s linear infinite;
-}
-.brand small{display:block;margin-top:2px;color:var(--muted);font:800 9px Inter;letter-spacing:.14em;text-transform:uppercase}
-.actions{display:flex;gap:8px}
+.brand small{display:block;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.nav-actions{display:flex;gap:9px;align-items:center}
 .btn{
- border:1px solid var(--line);background:#fff;color:var(--ink);
- border-radius:12px;padding:10px 14px;font-weight:800;
- transition:.2s;box-shadow:0 3px 12px #00000004;
+  border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:13px;padding:10px 14px;font-weight:800;
+  transition:.22s ease;box-shadow:0 4px 12px rgba(0,0,0,.04);
 }
-.btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px #00000010}
-.btn:active{transform:translateY(0)}
-.btn.primary{background:var(--green);border-color:var(--green);color:#fff}
-.btn.danger{color:#9B1C1C}
-
-/* ───────────────── LAYOUT ───────────────── */
-.app{max-width:1540px;margin:auto;padding:28px clamp(14px,3vw,42px) 48px}
-.hero{display:grid;grid-template-columns:1.5fr .5fr;gap:18px;margin-bottom:18px}
-.hero-main{
- min-height:320px;padding:clamp(25px,4vw,44px);border-radius:30px;color:#fff;
- background:
- radial-gradient(circle at 84% 12%,#31D96E40 0,transparent 20%),
- linear-gradient(135deg,#032B1A 0,#006B2E 58%,#00A94F 100%);
- box-shadow:var(--shadow);position:relative;overflow:hidden;
+.btn:hover{transform:translateY(-2px);box-shadow:0 9px 22px rgba(0,70,35,.11)}
+.btn.primary{background:var(--green);color:white;border-color:var(--green)}
+.btn.yellow{background:var(--yellow);border-color:var(--yellow-border)}
+.btn.danger{color:#a02d2d}
+.hero{max-width:1450px;margin:0 auto;padding:55px 28px 28px}
+.hero-grid{display:grid;grid-template-columns:1.35fr .65fr;gap:22px}
+.hero-card{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#006f35 0%,#00843d 55%,#0a9950 100%);
+  color:#fff;border-radius:30px;padding:38px;
+  min-height:270px;box-shadow:var(--shadow);
 }
-.hero-main::before,.hero-main::after{
- content:"";position:absolute;border:1px solid #ffffff18;border-radius:50%;pointer-events:none;
+.hero-card:before,.hero-card:after{
+  content:"";position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.14);
 }
-.hero-main::before{
- width:440px;height:440px;right:-145px;top:-245px;
- box-shadow:0 0 0 55px #ffffff05,0 0 0 110px #ffffff03;
-}
-.hero-main::after{width:190px;height:190px;right:14%;bottom:-125px}
-.eyebrow{font-size:10px;letter-spacing:.17em;font-weight:900;opacity:.68;text-transform:uppercase}
-h1{
- font-family:Manrope;font-size:clamp(35px,5vw,64px);line-height:.93;
- letter-spacing:-.065em;margin:12px 0 16px;position:relative;z-index:2;
-}
-.hero-main p{max-width:760px;color:#E5F8EB;font-size:14px;line-height:1.65;margin:0;position:relative;z-index:2}
-.progress-track{
- height:4px;max-width:860px;background:#ffffff1c;border-radius:99px;
- margin-top:25px;overflow:hidden;position:relative;z-index:3;
-}
-.progress-bar{height:100%;width:0;background:#fff;border-radius:99px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:14px;max-width:860px;position:relative;z-index:3}
+.hero-card:before{width:430px;height:430px;right:-180px;top:-190px}
+.hero-card:after{width:280px;height:280px;right:60px;bottom:-210px}
+.eyebrow{font-size:12px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;opacity:.76}
+h1{font-size:clamp(34px,5vw,62px);line-height:.96;letter-spacing:-.055em;margin:13px 0 16px;max-width:780px}
+.hero-card p{max-width:720px;margin:0;color:rgba(255,255,255,.82);font-size:16px;line-height:1.65}
+.progress-wrap{margin-top:27px;max-width:700px}
+.progress-label{display:flex;justify-content:space-between;font-size:12px;font-weight:900;margin-bottom:8px}
+.progress{height:9px;background:rgba(255,255,255,.18);border-radius:20px;overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:var(--yellow);border-radius:20px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .stat{
- padding:13px;border:1px solid #ffffff20;background:#ffffff10;
- border-radius:16px;backdrop-filter:blur(9px);
+  background:rgba(255,255,255,.88);border:1px solid var(--line);
+  border-radius:24px;padding:25px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;justify-content:space-between;min-height:128px;
+  animation:rise .65s both;
 }
-.stat b{display:block;font-size:24px;letter-spacing:-.05em}
-.stat span{font-size:9px;letter-spacing:.1em;opacity:.68;font-weight:800}
-.hero-note{
- background:#FFFFFFE8;border:1px solid var(--line);border-radius:30px;
- padding:27px;box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:center;
- position:relative;overflow:hidden;
-}
-.hero-note::after{
- content:"";position:absolute;width:170px;height:170px;right:-85px;bottom:-85px;
- background:var(--green3,#CDEEDB);border-radius:50%;
-}
-.quote{font:800 54px Georgia;color:var(--green);line-height:.4}
-.hero-note strong{font:800 19px Manrope;line-height:1.3;margin:15px 0 10px;position:relative;z-index:2}
-.hero-note p{font-size:12px;color:var(--muted);line-height:1.65;margin:0;position:relative;z-index:2}
-
-/* ───────────────── TOOLBAR ───────────────── */
+.stat:nth-child(2){animation-delay:.08s}.stat:nth-child(3){animation-delay:.16s}.stat:nth-child(4){animation-delay:.24s}
+.stat .value{font-size:34px;font-weight:950;letter-spacing:-.05em}
+.stat .label{color:var(--muted);font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:.07em}
 .toolbar{
- position:sticky;top:74px;z-index:70;padding:11px 0 15px;
- background:#F2F7F4E0;backdrop-filter:blur(18px);
+  max-width:1450px;margin:0 auto;padding:0 28px 22px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
 }
-.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.search{flex:1;min-width:240px;position:relative}
-.search::before{content:"⌕";position:absolute;left:14px;top:7px;color:#83918A;font-size:22px;z-index:2}
+.search{
+  flex:1;min-width:230px;position:relative;
+}
 .search input{
- width:100%;border:1px solid var(--line);border-radius:14px;
- padding:12px 14px 12px 40px;background:#fff;outline:0;transition:.2s;
+  width:100%;height:48px;border:1px solid var(--line);border-radius:15px;
+  padding:0 16px 0 43px;background:#fff;outline:none;transition:.2s;
 }
-.search input:focus{border-color:var(--green);box-shadow:0 0 0 4px #007A3310}
-.week-select{
- border:1px solid var(--line);background:#fff;color:var(--ink);
- border-radius:12px;padding:11px 13px;font-weight:750;
+.search input:focus{border-color:var(--green);box-shadow:0 0 0 4px rgba(0,132,61,.10)}
+.search span{position:absolute;left:15px;top:13px;color:var(--muted)}
+select{
+  height:48px;border:1px solid var(--line);background:#fff;border-radius:15px;
+  padding:0 13px;font-weight:800;color:var(--ink);outline:none;
 }
-.legend{display:flex;align-items:center;gap:15px;margin-top:9px;color:var(--muted);font-size:10px;font-weight:700}
-.legend-item{display:flex;align-items:center;gap:5px}
-.dot{width:10px;height:10px;border-radius:3px;display:inline-block}
-.dot.green{background:var(--mint)}.dot.yellow{background:var(--yellow)}.dot.blue{background:var(--blue)}
-
-/* ───────────────── PLANNER ───────────────── */
+.planning-shell{max-width:1450px;margin:0 auto;padding:0 28px 55px}
 .board{
- background:#fff;border:1px solid var(--line);border-radius:24px;
- overflow:auto;box-shadow:var(--shadow);
- scroll-behavior:smooth;
+  background:#fff;border:1px solid var(--line);border-radius:28px;
+  box-shadow:var(--shadow);overflow:hidden;
 }
+.board-head{
+  padding:21px 23px;border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;gap:16px;align-items:center;
+}
+.board-title{font-size:18px;font-weight:950;letter-spacing:-.03em}
+.board-sub{color:var(--muted);font-size:12px;margin-top:3px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:11px;font-weight:800}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.legend .g{background:var(--green)}.legend .y{background:var(--yellow);border:1px solid var(--yellow-border)}.legend .w{background:#fff;border:1px solid #ccd8d1}
 .month{
- min-width:1160px;padding:14px 18px;color:#fff;font:800 13px Manrope;
- background:linear-gradient(100deg,var(--deep),var(--green));
- position:sticky;left:0;
+  padding:16px 22px 12px;
+  background:linear-gradient(90deg,#f0f7f3,#fff);
+  font-weight:950;font-size:13px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--green-deep);border-bottom:1px solid var(--line);
 }
 .week{
- display:grid;grid-template-columns:150px repeat(5,minmax(202px,1fr));
- min-width:1160px;
+  border-bottom:1px solid var(--line);
+  transition:.3s ease;
 }
-.week-title{
- grid-column:1/-1;padding:10px 14px;background:linear-gradient(90deg,#EFF5F1,#F8FAF9);
- border-top:1px solid var(--line);font-size:12px;font-weight:900;color:var(--deep);
+.week:last-child{border-bottom:0}
+.week:hover{background:#fcfefd}
+.week-top{
+  display:grid;grid-template-columns:145px 1fr;
+  min-height:52px;background:#fbfdfb;border-bottom:1px solid var(--line);
 }
+.week-label{
+  padding:15px 18px;font-size:12px;font-weight:950;
+  color:var(--green-deep);border-right:1px solid var(--line);
+}
+.days{display:grid;grid-template-columns:repeat(5,minmax(110px,1fr))}
 .day{
- padding:12px 13px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
- background:#FBFDFC;
+  padding:14px 8px;text-align:center;font-size:11px;font-weight:950;
+  color:#718078;border-right:1px solid var(--line);
 }
-.day b{font-size:11px;letter-spacing:.04em}.day span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.day:last-child{border-right:0}
+.mission-row,.feasible-row{
+  display:grid;grid-template-columns:145px 1fr;
+}
 .row-label{
- padding:12px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
- background:#FBFDFC;color:var(--muted);font-size:10px;font-weight:900;letter-spacing:.04em;
+  padding:15px 18px;border-right:1px solid var(--line);
+  font-size:11px;font-weight:950;display:flex;align-items:center;gap:7px;
 }
+.mission-row .row-label{color:var(--green-deep)}
+.feasible-row .row-label{color:#987b00;background:#fffdf0}
+.cells{display:grid;grid-template-columns:repeat(5,minmax(110px,1fr))}
 .cell{
- min-height:116px;padding:11px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
- position:relative;cursor:pointer;transition:transform .18s,box-shadow .18s,background .18s;
+  min-height:78px;border-right:1px solid var(--line);padding:8px;
+  position:relative;transition:.2s ease;
 }
-.cell:hover{transform:translateY(-2px);box-shadow:inset 0 0 0 2px #007A3314;z-index:3}
-.cell.done{background:linear-gradient(135deg,var(--mint),#F5FCF8)}
-.cell.empty{background:#fff}
-.cell.feasible{background:linear-gradient(135deg,var(--yellow),var(--yellow-soft))}
-.cell.not-feasible{background:#fff}
-.task{font-size:12px;font-weight:760;line-height:1.45;max-width:91%}
-.empty .task::before{content:"Ajouter une mission…";color:#AAB5AF;font-weight:600}
-.tag{
- position:absolute;right:8px;top:8px;padding:4px 7px;border-radius:999px;
- background:#FFFFFFC9;border:1px solid #00000008;font-size:7px;font-weight:900;
+.cell:last-child{border-right:0}
+.mission-cell{
+  background:#fff;cursor:pointer;
 }
-.meta{font-size:8px;color:var(--muted);position:absolute;left:11px;bottom:9px}
-.feasible .task{text-align:center;margin-top:17px;font-size:10px;letter-spacing:.04em}
-.feasible .meta{text-align:center;left:0;right:0}
-.feasibility-help{
- grid-column:1/-1;padding:8px 14px;background:#FFF9D8;
- color:#6C5A13;font-size:10px;border-bottom:1px solid #E8D77C;
+.mission-cell:hover{background:#f5fbf7}
+.mission-card{
+  height:100%;min-height:60px;border-radius:13px;
+  border:1px dashed #cbd8d0;padding:9px 10px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  color:#9aa7a0;font-size:11px;font-weight:750;line-height:1.35;
+  transition:.22s ease;
 }
-.week-spacer{height:1px;background:var(--line);min-width:1160px}
-
-/* ───────────────── MODALS ───────────────── */
-.modal-back{
- position:fixed;inset:0;background:#0226178C;backdrop-filter:blur(10px);
- display:none;place-items:center;z-index:200;
+.mission-card.filled{
+  background:linear-gradient(135deg,#e8f7ee,#d5f0e0);
+  border:1px solid #9ed0b2;color:var(--green-deep);
+  box-shadow:0 5px 13px rgba(0,132,61,.08);
+  align-items:flex-start;justify-content:flex-start;text-align:left;
 }
-.modal-back.open{display:grid}
+.mission-cell:hover .mission-card{transform:translateY(-2px)}
+.feasible-cell{
+  min-height:54px;background:#fbfcfb;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.feasible-cell .feasible-box{
+  width:100%;height:38px;border-radius:11px;border:1px solid #d8e0db;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  color:#a1aca6;font-size:10px;font-weight:900;text-transform:uppercase;
+  transition:.2s ease;
+}
+.feasible-cell:hover .feasible-box{border-color:#d4b500;background:#fffdf0}
+.feasible-cell.active{background:var(--yellow-soft)}
+.feasible-cell.active .feasible-box{
+  background:var(--yellow);border-color:var(--yellow-border);color:#654f00;
+  box-shadow:0 5px 16px rgba(222,177,0,.20);
+  animation:yellowPop .35s ease;
+}
+.feasible-help{
+  padding:9px 16px;background:#fffdf1;border-top:1px solid #f1e3a1;
+  color:#806900;font-size:10px;font-weight:800;text-align:right;
+}
+.empty{
+  padding:70px 20px;text-align:center;color:var(--muted);
+}
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(4,30,18,.48);
+  backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;
+  z-index:100;padding:20px;
+}
+.modal-backdrop.open{display:flex;animation:fade .2s ease}
 .modal{
- width:min(620px,calc(100% - 28px));background:#fff;border-radius:26px;padding:25px;
- box-shadow:0 35px 110px #0005;animation:modalIn .22s ease;
+  width:min(650px,100%);background:#fff;border-radius:25px;
+  box-shadow:0 30px 100px rgba(0,0,0,.28);overflow:hidden;
+  animation:modalIn .28s cubic-bezier(.2,.8,.2,1);
 }
-.modal-header{display:flex;justify-content:space-between;align-items:flex-start;gap:15px}
-.modal h2{font-family:Manrope;margin:0 0 5px;font-size:22px}
-.modal p{font-size:12px;color:var(--muted);margin:0 0 14px}
-.close{
- width:34px;height:34px;border-radius:10px;border:1px solid var(--line);
- background:#fff;font-size:17px;cursor:pointer;
-}
+.modal-head{padding:22px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}
+.modal-title{font-size:18px;font-weight:950}
+.close{border:0;background:#f2f5f3;width:36px;height:36px;border-radius:10px;font-size:18px}
+.modal-body{padding:22px 24px}
+.modal-body label{display:block;font-size:12px;font-weight:900;margin-bottom:8px}
 textarea{
- width:100%;min-height:150px;border:1px solid var(--line);border-radius:14px;
- padding:13px;outline:0;resize:vertical;line-height:1.5;
+  width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);
+  border-radius:15px;padding:14px;outline:none;line-height:1.5;
 }
-textarea:focus{border-color:var(--green);box-shadow:0 0 0 4px #007A3310}
-.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
-@keyframes modalIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
-
-/* ───────────────── TOAST / EMPTY ───────────────── */
+textarea:focus{border-color:var(--green);box-shadow:0 0 0 4px rgba(0,132,61,.10)}
+.modal-foot{padding:17px 24px;background:#f8faf9;display:flex;justify-content:flex-end;gap:9px}
 .toast{
- position:fixed;right:22px;bottom:22px;z-index:300;
- background:#10251B;color:#fff;border:1px solid #ffffff12;
- padding:12px 16px;border-radius:13px;font-size:11px;font-weight:800;
- box-shadow:0 15px 45px #0004;opacity:0;transform:translateY(12px);transition:.25s;
+  position:fixed;right:22px;bottom:22px;z-index:200;
+  background:#10271b;color:#fff;border:1px solid rgba(255,255,255,.1);
+  padding:13px 16px;border-radius:14px;font-size:12px;font-weight:800;
+  box-shadow:0 15px 40px rgba(0,0,0,.2);
+  transform:translateY(20px);opacity:0;pointer-events:none;
 }
-.toast.show{opacity:1;transform:none}
-.empty-state{
- padding:55px 20px;text-align:center;color:var(--muted);
+.toast.show{animation:toastIn .28s forwards}
+.footer{max-width:1450px;margin:auto;padding:0 28px 35px;color:#839089;font-size:11px;text-align:center}
+@keyframes logoPulse{0%,100%{box-shadow:0 8px 24px rgba(0,132,61,.28)}50%{box-shadow:0 8px 34px rgba(0,132,61,.48)}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes yellowPop{0%{transform:scale(.95)}70%{transform:scale(1.02)}100%{transform:scale(1)}}
+@keyframes toastIn{0%{opacity:0;transform:translateY(20px)}15%,85%{opacity:1;transform:none}100%{opacity:0;transform:translateY(10px)}}
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr}
+  .week-top,.mission-row,.feasible-row{grid-template-columns:105px 1fr}
+  .week-label,.row-label{padding-left:10px;padding-right:10px}
+  .day,.cell{min-width:90px}
+  .board{overflow-x:auto}
+  .month,.board-head{min-width:650px}
 }
-.empty-state strong{display:block;color:var(--ink);font:800 18px Manrope;margin-bottom:5px}
-
-/* ───────────────── RESPONSIVE / PRINT ───────────────── */
-@media(max-width:950px){
- .hero{grid-template-columns:1fr}.hero-note{display:none}
- .stats{grid-template-columns:repeat(2,1fr)}
- .app{padding:18px 12px 35px}.hide-mobile{display:none}
- .topbar{padding:0 13px}
+@media(max-width:620px){
+  .topbar{padding:0 15px}.topbar .btn:not(.primary){display:none}
+  .hero,.toolbar,.planning-shell,.footer{padding-left:15px;padding-right:15px}
+  .hero{padding-top:30px}
+  .hero-card{padding:25px;border-radius:23px}
+  .stats{grid-template-columns:1fr 1fr}
+  .stat{min-height:105px;padding:17px}
+  .stat .value{font-size:27px}
 }
 @media(prefers-reduced-motion:reduce){
- *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  *,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}
 }
 @media print{
- .topbar,.toolbar,.hero-note,.footer,.toast{display:none!important}
- body{background:#fff}.app{padding:0}.hero{display:block}.hero-main{box-shadow:none}
- .board{box-shadow:none;border:1px solid #999}
+  .topbar,.toolbar,.modal-backdrop,.toast,.footer{display:none!important}
+  body{background:#fff}
+  .hero{padding-top:20px}
+  .hero-card{box-shadow:none}
+  .board{box-shadow:none}
 }
 </style>
 </head>
-
 <body>
-
 <header class="topbar">
- <div class="brand">
-  <div class="logo" aria-label="Identité verte">★</div>
-  <div>MISSION CONTROL<small>Continuous Improvement · Marseille</small></div>
- </div>
- <div class="actions">
-  <button class="btn hide-mobile" onclick="exportData()">↗ Exporter</button>
-  <button class="btn hide-mobile" onclick="window.print()">Imprimer</button>
-  <button class="btn primary" onclick="save()">✓ Sauvegarder</button>
- </div>
+  <div class="brand">
+    <div class="logo">H</div>
+    <div>
+      <div>MISSION CONTROL</div>
+      <small>Planning • Amélioration continue</small>
+    </div>
+  </div>
+  <div class="nav-actions">
+    <button class="btn" id="todayBtn">Aujourd’hui</button>
+    <button class="btn" id="printBtn">Imprimer</button>
+    <button class="btn primary" id="addBtn">+ Ajouter une mission</button>
+  </div>
 </header>
 
-<main class="app">
-
 <section class="hero">
- <div class="hero-main">
-  <div class="eyebrow">Mission control · planning opérationnel</div>
-  <h1>Mes missions,<br>jour après jour.</h1>
-  <p>Un espace fluide pour suivre ce qui a été réalisé et visualiser immédiatement les périodes pendant lesquelles chaque mission peut être menée.</p>
-
-  <div class="progress-track">
-   <div id="progressBar" class="progress-bar"></div>
+  <div class="hero-grid">
+    <div class="hero-card">
+      <div class="eyebrow">Boris KINNOUEZAN • Planning opérationnel</div>
+      <h1>Une mission.<br>Un jour. Une vision.</h1>
+      <p>
+        Le tableau est volontairement simple : les missions sont en vert,
+        et les <strong>jours où une mission est faisable sont en jaune</strong>.
+        Clique directement sur les cases jaunes pour ouvrir ou fermer la faisabilité.
+      </p>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Avancement du planning</span><span id="progressText">0%</span></div>
+        <div class="progress"><span id="progressBar"></span></div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="label">Missions</span><span class="value" id="missionCount">0</span></div>
+      <div class="stat"><span class="label">Jours faisables</span><span class="value" id="feasibleCount">0</span></div>
+      <div class="stat"><span class="label">Jours planifiés</span><span class="value" id="plannedCount">0</span></div>
+      <div class="stat"><span class="label">Taux de couverture</span><span class="value" id="coverage">0%</span></div>
+    </div>
   </div>
-
-  <div class="stats">
-   <div class="stat"><b id="kpiWeeks">0</b><span>SEMAINES</span></div>
-   <div class="stat"><b id="kpiTasks">0</b><span>MISSIONS</span></div>
-   <div class="stat"><b id="kpiDays">0</b><span>JOURS RENSEIGNÉS</span></div>
-   <div class="stat"><b id="kpiRate">0%</b><span>REMPLISSAGE</span></div>
-  </div>
- </div>
-
- <aside class="hero-note">
-  <div class="quote">“</div>
-  <strong>Une mission. Une période. Une trace.</strong>
-  <p>Le jaune n'est pas une mission : c'est une <b>fenêtre de faisabilité</b>. Tu la définis directement sur la semaine concernée.</p>
- </aside>
 </section>
 
 <section class="toolbar">
- <div class="tools">
-  <div class="search">
-   <input id="searchInput" placeholder="Rechercher une mission…" autocomplete="off" oninput="render()">
-  </div>
-
-  <select id="weekSelect" class="week-select" onchange="render()">
-   <option value="all">Toutes les semaines</option>
-  </select>
-
-  <button class="btn" onclick="scrollToToday()">⌖ Aujourd'hui</button>
-  <button class="btn" onclick="addWeek()">＋ Ajouter une semaine</button>
-  <button class="btn danger" onclick="resetAll()">↺ Réinitialiser</button>
- </div>
-
- <div class="legend">
-  <span class="legend-item"><i class="dot green"></i>Mission renseignée</span>
-  <span class="legend-item"><i class="dot yellow"></i>Jour faisable</span>
-  <span class="legend-item"><i class="dot blue"></i>Référence de planification</span>
- </div>
+  <div class="search"><span>⌕</span><input id="search" placeholder="Rechercher une mission…"></div>
+  <select id="weekFilter"><option value="all">Toutes les semaines</option></select>
+  <button class="btn" id="resetBtn">Réinitialiser</button>
 </section>
 
-<section id="board" class="board"></section>
-
-<div class="footer">
- Mission Control · stockage local du navigateur · GitHub Pages · Ctrl + K pour rechercher
-</div>
-
+<main class="planning-shell">
+  <section class="board">
+    <div class="board-head">
+      <div>
+        <div class="board-title">Planning des missions</div>
+        <div class="board-sub">Clique sur une case verte pour modifier la mission. Clique sur une case jaune pour définir sa période de faisabilité.</div>
+      </div>
+      <div class="legend">
+        <span><i class="g"></i> Mission renseignée</span>
+        <span><i class="y"></i> Jour faisable</span>
+        <span><i class="w"></i> Jour non sélectionné</span>
+      </div>
+    </div>
+    <div id="boardContent"></div>
+  </section>
 </main>
 
-<div id="missionModal" class="modal-back">
- <div class="modal">
-  <div class="modal-header">
-   <div>
-    <h2 id="modalTitle">Mission</h2>
-    <p id="modalSubtitle">Décris précisément l'activité réalisée.</p>
-   </div>
-   <button class="close" onclick="closeModal()">×</button>
-  </div>
+<div class="footer">Planning local • Les modifications sont conservées automatiquement dans ce navigateur.</div>
+<div class="toast" id="toast"></div>
 
-  <textarea id="missionText" placeholder="Ex. Analyse des données Parsable, création de la requête SQL et vérification des premiers résultats…"></textarea>
-
-  <div class="modal-actions">
-   <button class="btn" onclick="closeModal()">Annuler</button>
-   <button class="btn primary" onclick="applyMission()">Enregistrer</button>
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="modalTitle">Nouvelle mission</div>
+        <div class="board-sub" id="modalSub"></div>
+      </div>
+      <button class="close" id="closeModal">×</button>
+    </div>
+    <div class="modal-body">
+      <label for="missionInput">Nom de la mission</label>
+      <textarea id="missionInput" placeholder="Ex. Analyse des arrêts Fut Depal…"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn danger" id="deleteBtn">Supprimer</button>
+      <button class="btn" id="cancelBtn">Annuler</button>
+      <button class="btn primary" id="saveBtn">Enregistrer</button>
+    </div>
   </div>
- </div>
 </div>
 
-<div id="toast" class="toast"></div>
-
 <script>
-/* ================================================================
-   MISSION CONTROL — BORIS KINNOUEZAN
-   Version autonome GitHub Pages
-   Aucun backend / aucune dépendance JavaScript
-   ================================================================ */
+"use strict";
 
-const STORAGE_KEY = "boris-mission-control-v5";
-const WEEKS_KEY   = STORAGE_KEY + "-weeks";
-const FEAS_KEY    = STORAGE_KEY + "-feasibility";
+/* =========================================================
+   1. DONNÉES DE BASE
+   ========================================================= */
 
-const INITIAL_MISSIONS = {
- "2026-09-14":"Immersion shop floor",
- "2026-09-15":"Compréhension du sujet",
- "2026-09-16":"Compréhension du sujet",
- "2026-09-17":"Création compte Parsable",
- "2026-09-18":"Premier test Fut Depal Matin",
- "2026-09-21":"Création modèle Pal (4) et Depal restant (2)"
+const DAYS = [
+  {key:"mon", label:"LUN", full:"Lundi"},
+  {key:"tue", label:"MAR", full:"Mardi"},
+  {key:"wed", label:"MER", full:"Mercredi"},
+  {key:"thu", label:"JEU", full:"Jeudi"},
+  {key:"fri", label:"VEN", full:"Vendredi"}
+];
+
+const STORAGE_KEY = "boris-mission-control-v8";
+const FEASIBILITY_KEY = "boris-mission-control-v8-feasibility";
+
+const initialWeeks = [
+  {id:"w1", month:"SEPTEMBRE 2026", label:"Semaine du 14 au 18 septembre 2026", start:"14/09/2026"},
+  {id:"w2", month:"SEPTEMBRE 2026", label:"Semaine du 21 au 25 septembre 2026", start:"21/09/2026"}
+];
+
+const initialMissions = {
+  "w1-mon":"Immersion shop floor",
+  "w1-tue":"Compréhension du sujet",
+  "w1-wed":"Compréhension du sujet",
+  "w1-thu":"Création compte Parsable",
+  "w1-fri":"Premier test Fut Depal Matin",
+  "w2-mon":"Création modèle Pal (4) et Depal restant (2)"
 };
 
-let missions = loadJSON(STORAGE_KEY, null) || {...INITIAL_MISSIONS};
-let customWeeks = loadJSON(WEEKS_KEY, []) || [];
-let feasibility = loadJSON(FEAS_KEY, {}) || {};
-let activeDate = null;
+let weeks = [...initialWeeks];
+let missions = {...initialMissions};
+let feasibility = {};
+let currentCell = null;
 
-/* ================================================================
-   OUTILS DE DONNÉES
-   ================================================================ */
+/* =========================================================
+   2. UTILITAIRES
+   ========================================================= */
 
-function loadJSON(key, fallback){
- try{
-  const raw = localStorage.getItem(key);
-  return raw ? JSON.parse(raw) : fallback;
- }catch(error){
-  return fallback;
+function safeLoad(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  }catch(error){
+    return fallback;
+  }
 }
 
-function saveJSON(key, value){
- localStorage.setItem(key, JSON.stringify(value));
-}
-
-function save(showToast = true){
- saveJSON(STORAGE_KEY, missions);
- saveJSON(WEEKS_KEY, customWeeks);
- saveJSON(FEAS_KEY, feasibility);
-
- if(showToast){
-  showToastMessage("✓ Planning sauvegardé");
- }
-}
-
-function dateFromISO(value){
- const parts = value.split("-").map(Number);
- return new Date(parts[0], parts[1]-1, parts[2]);
-}
-
-function iso(date){
- const y = date.getFullYear();
- const m = String(date.getMonth()+1).padStart(2,"0");
- const d = String(date.getDate()).padStart(2,"0");
- return `${y}-${m}-${d}`;
-}
-
-function addDays(date, amount){
- const result = new Date(date);
- result.setDate(result.getDate()+amount);
- return result;
-}
-
-function mondayOf(date){
- const result = new Date(date);
- result.setHours(0,0,0,0);
- const offset = (result.getDay()+6)%7;
- result.setDate(result.getDate()-offset);
- return result;
-}
-
-function formatDay(date){
- return date.toLocaleDateString("fr-FR",{
-  day:"2-digit",
-  month:"2-digit"
- });
-}
-
-function formatLongDate(date){
- return date.toLocaleDateString("fr-FR",{
-  weekday:"long",
-  day:"2-digit",
-  month:"long",
-  year:"numeric"
- });
-}
-
-function formatMonth(date){
- const value = date.toLocaleDateString("fr-FR",{
-  month:"long",
-  year:"numeric"
- });
- return value.charAt(0).toUpperCase()+value.slice(1);
-}
-
-function weekNumber(date){
- const target = new Date(Date.UTC(
-  date.getFullYear(),
-  date.getMonth(),
-  date.getDate()
- ));
-
- const day = target.getUTCDay() || 7;
- target.setUTCDate(target.getUTCDate()+4-day);
-
- const yearStart = new Date(
-  Date.UTC(target.getUTCFullYear(),0,1)
- );
-
- return Math.ceil(
-  (((target-yearStart)/86400000)+1)/7
- );
+function saveAll(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(missions));
+  localStorage.setItem(FEASIBILITY_KEY, JSON.stringify(feasibility));
 }
 
 function escapeHTML(value){
- return value.replace(/[&<>"']/g, character => ({
-  "&":"&amp;",
-  "<":"&lt;",
-  ">":"&gt;",
-  '"':"&quot;",
-  "'":"&#039;"
- }[character]));
+  return String(value ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
 
-/* ================================================================
-   CALENDRIER
-   ================================================================ */
-
-function getAllWeeks(){
- const sourceDates = Object.keys(missions)
-  .map(date => mondayOf(dateFromISO(date)));
-
- sourceDates.push(
-  mondayOf(new Date(2026,8,14))
- );
-
- let minimum = new Date(
-  Math.min(...sourceDates.map(date => date.getTime()))
- );
-
- let maximum = new Date(2026,11,18);
-
- if(sourceDates.length){
-  const sourceMax = new Date(
-   Math.max(...sourceDates.map(date => date.getTime()))
-  );
-
-  if(sourceMax > maximum){
-   maximum = sourceMax;
-  }
- }
-
- const result = [];
-
- for(
-  let cursor = new Date(minimum);
-  cursor <= maximum;
-  cursor = addDays(cursor,7)
- ){
-  result.push(new Date(cursor));
- }
-
- customWeeks.forEach(value => {
-  const customDate = mondayOf(dateFromISO(value));
-
-  const exists = result.some(
-   item => iso(item) === iso(customDate)
-  );
-
-  if(!exists){
-   result.push(customDate);
-  }
- });
-
- return result.sort(
-  (a,b) => a.getTime()-b.getTime()
- );
+function showToast(message){
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.remove("show");
+  void toast.offsetWidth;
+  toast.classList.add("show");
 }
 
-function getWeekFeasibility(monday){
- const key = iso(monday);
-
- if(
-  Array.isArray(feasibility[key])
- ){
-  return feasibility[key];
- }
-
- return [
-  0,1,2,3,4
- ].map(offset =>
-  iso(addDays(monday,offset))
- );
+function missionKeys(){
+  return Object.keys(missions).filter(key => missions[key] && missions[key].trim());
 }
 
-function setWeekFeasibility(monday, dateKey, enabled){
- const weekKey = iso(monday);
-
- let current = getWeekFeasibility(monday);
-
- if(enabled && !current.includes(dateKey)){
-  current.push(dateKey);
- }
-
- if(!enabled){
-  current = current.filter(
-   value => value !== dateKey
-  );
- }
-
- feasibility[weekKey] = current;
- save(false);
+function feasibilityKeys(){
+  return Object.keys(feasibility).filter(key => feasibility[key] === true);
 }
 
-/* ================================================================
-   RENDU PRINCIPAL
-   ================================================================ */
-
-function render(){
- const board = document.getElementById("board");
- const searchValue =
-  document.getElementById("searchInput").value
-   .trim()
-   .toLowerCase();
-
- const select =
-  document.getElementById("weekSelect");
-
- const allWeeks = getAllWeeks();
- const selectedWeek = select.value;
-
- select.innerHTML =
-  '<option value="all">Toutes les semaines</option>';
-
- allWeeks.forEach(week => {
-  const option = document.createElement("option");
-
-  option.value = iso(week);
-  option.textContent =
-   `S${weekNumber(week)} · ${formatDay(week)} → ${formatDay(addDays(week,4))}`;
-
-  select.appendChild(option);
- });
-
- select.value = selectedWeek;
-
- if(
-  ![...select.options]
-   .some(option => option.value === selectedWeek)
- ){
-  select.value = "all";
- }
-
- board.innerHTML = "";
-
- let currentMonth = "";
-
- const visibleWeeks =
-  allWeeks.filter(week =>
-   select.value === "all" ||
-   iso(week) === select.value
-  );
-
- if(!visibleWeeks.length){
-  board.innerHTML = `
-   <div class="empty-state">
-    <strong>Aucune semaine trouvée</strong>
-    Modifie ton filtre ou ajoute une nouvelle semaine.
-   </div>
-  `;
-  updateKPIs(allWeeks);
-  return;
- }
-
- visibleWeeks.forEach(week => {
-
-  const monthLabel = formatMonth(week);
-
-  if(monthLabel !== currentMonth){
-
-   const monthElement =
-    document.createElement("div");
-
-   monthElement.className = "month";
-   monthElement.textContent =
-    "▰  " + monthLabel;
-
-   board.appendChild(monthElement);
-
-   currentMonth = monthLabel;
-  }
-
-  const weekElement =
-   document.createElement("div");
-
-  weekElement.className = "week";
-
-  const title =
-   document.createElement("div");
-
-  title.className = "week-title";
-
-  title.textContent =
-   `Semaine ${weekNumber(week)} · ${formatDay(week)} → ${formatDay(addDays(week,4))}`;
-
-  weekElement.appendChild(title);
-
-  /* En-tête des jours */
-
-  const missionLabel =
-   document.createElement("div");
-
-  missionLabel.className = "row-label";
-
-  missionLabel.innerHTML =
-   "JOUR<br><span style='font-weight:500'>Mission</span>";
-
-  weekElement.appendChild(missionLabel);
-
-  const dates = [
-   0,1,2,3,4
-  ].map(offset =>
-   addDays(week,offset)
-  );
-
-  dates.forEach(date => {
-
-   const header =
-    document.createElement("div");
-
-   header.className = "day";
-
-   const names = {
-    1:"LUN",
-    2:"MAR",
-    3:"MER",
-    4:"JEU",
-    5:"VEN"
-   };
-
-   header.innerHTML = `
-    <b>${names[date.getDay()]}</b>
-    <span>${formatDay(date)}</span>
-   `;
-
-   weekElement.appendChild(header);
+function allDayKeys(){
+  const keys = [];
+  weeks.forEach(week => {
+    DAYS.forEach(day => keys.push(`${week.id}-${day.key}`));
   });
-
-  /* Ligne missions */
-
-  const missionRowLabel =
-   document.createElement("div");
-
-  missionRowLabel.className = "row-label";
-
-  missionRowLabel.innerHTML =
-   "MISSION<br><span style='font-weight:500'>Réalisée / à détailler</span>";
-
-  weekElement.appendChild(missionRowLabel);
-
-  dates.forEach(date => {
-
-   const key = iso(date);
-   const value = missions[key] || "";
-
-   const cell =
-    document.createElement("div");
-
-   cell.className =
-    "cell " + (value ? "done" : "empty");
-
-   const searchMatch =
-    !searchValue ||
-    value.toLowerCase().includes(searchValue);
-
-   if(!searchMatch){
-    cell.style.opacity = ".18";
-   }
-
-   cell.innerHTML = `
-    <div class="tag">
-     ${value ? "RÉALISÉ" : "À FAIRE"}
-    </div>
-
-    <div class="task">
-     ${value ? escapeHTML(value) : ""}
-    </div>
-
-    <div class="meta">
-     ${value
-       ? "cliquer pour modifier"
-       : "cliquer pour ajouter"}
-    </div>
-   `;
-
-   cell.addEventListener(
-    "click",
-    () => openMissionModal(key)
-   );
-
-   weekElement.appendChild(cell);
-  });
-
-  /* Explication visible : plus d'ambiguïté */
-
-  const help =
-   document.createElement("div");
-
-  help.className = "feasibility-help";
-
-  help.textContent =
-   "🟡 FAISABILITÉ — clique sur un jour pour indiquer si la mission est réalisable ce jour-là.";
-
-  weekElement.appendChild(help);
-
-  /* Ligne faisabilité */
-
-  const feasibilityLabel =
-   document.createElement("div");
-
-  feasibilityLabel.className = "row-label";
-
-  feasibilityLabel.innerHTML =
-   "🟡<br><span style='font-weight:500'>Faisabilité</span>";
-
-  weekElement.appendChild(feasibilityLabel);
-
-  const enabledDays =
-   getWeekFeasibility(week);
-
-  dates.forEach(date => {
-
-   const key = iso(date);
-
-   const active =
-    enabledDays.includes(key);
-
-   const cell =
-    document.createElement("div");
-
-   cell.className =
-    "cell " +
-    (active ? "feasible" : "not-feasible");
-
-   cell.innerHTML = `
-    <div class="task">
-     ${active ? "FAISABLE" : "NON SÉLECTIONNÉ"}
-    </div>
-
-    <div class="meta">
-     cliquer pour ${active ? "retirer" : "activer"}
-    </div>
-   `;
-
-   cell.addEventListener(
-    "click",
-    () => {
-
-     setWeekFeasibility(
-      week,
-      key,
-      !active
-     );
-
-     render();
-
-     showToastMessage(
-      active
-       ? "Jour retiré de la période faisable"
-       : "Jour ajouté à la période faisable"
-     );
-    }
-   );
-
-   weekElement.appendChild(cell);
-  });
-
-  board.appendChild(weekElement);
-
-  const spacer =
-   document.createElement("div");
-
-  spacer.className = "week-spacer";
-
-  board.appendChild(spacer);
- });
-
- updateKPIs(allWeeks);
+  return keys;
 }
 
-/* ================================================================
-   INDICATEURS
-   ================================================================ */
+function weekIndexById(id){
+  return weeks.findIndex(week => week.id === id);
+}
 
-function updateKPIs(allWeeks){
+/* =========================================================
+   3. CHARGEMENT
+   ========================================================= */
 
- const missionDates =
-  Object.keys(missions)
-   .filter(
-    key =>
-     missions[key] &&
-     missions[key].trim()
-   );
+(function loadState(){
+  const storedMissions = safeLoad(STORAGE_KEY, null);
+  const storedFeasibility = safeLoad(FEASIBILITY_KEY, null);
 
- const missionCount =
-  missionDates.length;
-
- const dayCount =
-  missionDates.length;
-
- const possibleDays =
-  allWeeks.length * 5;
-
- const percentage =
-  possibleDays
-   ? Math.min(
-      100,
-      Math.round(
-       missionCount /
-       possibleDays *
-       100
-      )
-     )
-   : 0;
-
- animateNumber(
-  "kpiWeeks",
-  allWeeks.length
- );
-
- animateNumber(
-  "kpiTasks",
-  missionCount
- );
-
- animateNumber(
-  "kpiDays",
-  dayCount
- );
-
- animateNumber(
-  "kpiRate",
-  percentage,
-  "%"
- );
-
- const progress =
-  document.getElementById(
-   "progressBar"
-  );
-
- requestAnimationFrame(
-  () => {
-   progress.style.width =
-    percentage + "%";
+  if(storedMissions && typeof storedMissions === "object"){
+    missions = {...initialMissions, ...storedMissions};
   }
- );
-}
 
-function animateNumber(
- elementId,
- target,
- suffix = ""
-){
-
- const element =
-  document.getElementById(
-   elementId
-  );
-
- const start =
-  Number(element.dataset.value || 0);
-
- const duration = 450;
-
- const started =
-  performance.now();
-
- function tick(now){
-
-  const progress =
-   Math.min(
-    1,
-    (now-started)/duration
-   );
-
-  const eased =
-   1-Math.pow(1-progress,3);
-
-  const value =
-   Math.round(
-    start+(target-start)*eased
-   );
-
-  element.textContent =
-   value + suffix;
-
-  if(progress<1){
-   requestAnimationFrame(tick);
-  }else{
-   element.dataset.value = target;
+  if(storedFeasibility && typeof storedFeasibility === "object"){
+    feasibility = storedFeasibility;
   }
- }
 
- requestAnimationFrame(tick);
-}
-
-/* ================================================================
-   MODALE MISSION
-   ================================================================ */
-
-function openMissionModal(dateKey){
-
- activeDate = dateKey;
-
- const date =
-  dateFromISO(dateKey);
-
- document.getElementById(
-  "modalTitle"
- ).textContent =
-  formatLongDate(date);
-
- document.getElementById(
-  "modalSubtitle"
- ).textContent =
-  "Décris précisément ce que tu as fait ce jour-là.";
-
- document.getElementById(
-  "missionText"
- ).value =
-  missions[dateKey] || "";
-
- document.getElementById(
-  "missionModal"
- ).classList.add("open");
-
- setTimeout(
-  () =>
-   document.getElementById(
-    "missionText"
-   ).focus(),
-  50
- );
-}
-
-function closeModal(){
- document.getElementById(
-  "missionModal"
- ).classList.remove("open");
-
- activeDate = null;
-}
-
-function applyMission(){
-
- if(!activeDate){
-  return;
- }
-
- const value =
-  document.getElementById(
-   "missionText"
-  ).value.trim();
-
- if(value){
-  missions[activeDate] = value;
- }else{
-  delete missions[activeDate];
- }
-
- save(false);
- closeModal();
- render();
-
- showToastMessage(
-  value
-   ? "✓ Mission enregistrée"
-   : "Mission supprimée"
- );
-}
-
-/* ================================================================
-   ACTIONS
-   ================================================================ */
-
-function addWeek(){
-
- const weeks =
-  getAllWeeks();
-
- const last =
-  weeks[weeks.length-1];
-
- const next =
-  addDays(last,7);
-
- const key =
-  iso(next);
-
- if(!customWeeks.includes(key)){
-  customWeeks.push(key);
- }
-
- save(false);
-
- render();
-
- const select =
-  document.getElementById(
-   "weekSelect"
-  );
-
- select.value = key;
-
- render();
-
- showToastMessage(
-  `S${weekNumber(next)} ajoutée`
- );
-}
-
-function resetAll(){
-
- const answer =
-  confirm(
-   "Réinitialiser les missions et les périodes de faisabilité ?"
-  );
-
- if(!answer){
-  return;
- }
-
- missions = {
-  ...INITIAL_MISSIONS
- };
-
- customWeeks = [];
- feasibility = {};
-
- save(false);
- render();
-
- showToastMessage(
-  "Planning réinitialisé"
- );
-}
-
-function exportData(){
-
- const payload = {
-  application:"Mission Control",
-  version:"5.0",
-  exportedAt:new Date().toISOString(),
-  missions,
-  customWeeks,
-  feasibility
- };
-
- const blob =
-  new Blob(
-   [
-    JSON.stringify(
-     payload,
-     null,
-     2
-    )
-   ],
-   {
-    type:"application/json"
-   }
-  );
-
- const url =
-  URL.createObjectURL(blob);
-
- const link =
-  document.createElement("a");
-
- link.href = url;
- link.download =
-  "mission-control-boris.json";
-
- link.click();
-
- URL.revokeObjectURL(url);
-
- showToastMessage(
-  "↗ Export JSON créé"
- );
-}
-
-function scrollToToday(){
-
- const today =
-  new Date();
-
- const todayMonday =
-  mondayOf(today);
-
- const select =
-  document.getElementById(
-   "weekSelect"
-  );
-
- const key =
-  iso(todayMonday);
-
- const optionExists =
-  [...select.options]
-   .some(
-    option =>
-     option.value === key
-   );
-
- if(optionExists){
-  select.value = key;
-  render();
- }else{
-  select.value = "all";
-  render();
- }
-
- setTimeout(
-  () => {
-   const target =
-    document.querySelector(
-     `[data-date="${iso(today)}"]`
-    );
-
-   if(target){
-    target.scrollIntoView({
-     behavior:"smooth",
-     block:"center",
-     inline:"center"
+  /*
+    Première ouverture :
+    les jours correspondant aux missions existantes deviennent
+    automatiquement faisables. L'utilisateur peut ensuite les
+    désactiver ou activer d'autres jours.
+  */
+  if(Object.keys(feasibility).length === 0){
+    Object.keys(missions).forEach(key => {
+      if(missions[key]) feasibility[key] = true;
     });
-   }
-  },
-  80
- );
-}
-
-/* ================================================================
-   NOTIFICATIONS
-   ================================================================ */
-
-let toastTimer = null;
-
-function showToastMessage(message){
-
- const toast =
-  document.getElementById(
-   "toast"
-  );
-
- toast.textContent = message;
-
- toast.classList.add(
-  "show"
- );
-
- clearTimeout(toastTimer);
-
- toastTimer =
-  setTimeout(
-   () =>
-    toast.classList.remove(
-     "show"
-    ),
-   1900
-  );
-}
-
-/* ================================================================
-   RACCOURCIS / ÉVÉNEMENTS
-   ================================================================ */
-
-document
- .getElementById("missionModal")
- .addEventListener(
-  "click",
-  event => {
-   if(
-    event.target.id ===
-    "missionModal"
-   ){
-    closeModal();
-   }
+    saveAll();
   }
- );
+})();
 
-document.addEventListener(
- "keydown",
- event => {
+/* =========================================================
+   4. RENDU DU FILTRE
+   ========================================================= */
 
+function renderWeekFilter(){
+  const select = document.getElementById("weekFilter");
+  const current = select.value;
+
+  select.innerHTML = `<option value="all">Toutes les semaines</option>`;
+
+  weeks.forEach((week, index) => {
+    const option = document.createElement("option");
+    option.value = week.id;
+    option.textContent = `S${index + 1} • ${week.start}`;
+    select.appendChild(option);
+  });
+
+  if([...select.options].some(o => o.value === current)){
+    select.value = current;
+  }
+}
+
+/* =========================================================
+   5. RENDU DU TABLEAU
+   ========================================================= */
+
+function renderBoard(){
+  const root = document.getElementById("boardContent");
+  const query = document.getElementById("search").value.trim().toLowerCase();
+  const filter = document.getElementById("weekFilter").value;
+
+  root.innerHTML = "";
+
+  let visibleWeeks = weeks.filter(week => filter === "all" || week.id === filter);
+
+  if(query){
+    visibleWeeks = visibleWeeks.filter(week =>
+      DAYS.some(day => {
+        const value = missions[`${week.id}-${day.key}`] || "";
+        return value.toLowerCase().includes(query);
+      })
+    );
+  }
+
+  if(visibleWeeks.length === 0){
+    root.innerHTML = `<div class="empty">Aucune mission ne correspond à ta recherche.</div>`;
+    return;
+  }
+
+  let lastMonth = "";
+
+  visibleWeeks.forEach((week, index) => {
+    if(week.month !== lastMonth){
+      const month = document.createElement("div");
+      month.className = "month";
+      month.textContent = week.month;
+      root.appendChild(month);
+      lastMonth = week.month;
+    }
+
+    const weekEl = document.createElement("section");
+    weekEl.className = "week";
+    weekEl.dataset.week = week.id;
+
+    const top = document.createElement("div");
+    top.className = "week-top";
+
+    const label = document.createElement("div");
+    label.className = "week-label";
+    label.textContent = `S${index + 1}`;
+    top.appendChild(label);
+
+    const days = document.createElement("div");
+    days.className = "days";
+
+    DAYS.forEach(day => {
+      const d = document.createElement("div");
+      d.className = "day";
+      d.title = day.full;
+      d.textContent = day.label;
+      days.appendChild(d);
+    });
+
+    top.appendChild(days);
+    weekEl.appendChild(top);
+
+    /* Ligne des missions */
+    const missionRow = document.createElement("div");
+    missionRow.className = "mission-row";
+
+    const missionLabel = document.createElement("div");
+    missionLabel.className = "row-label";
+    missionLabel.innerHTML = "● MISSION";
+    missionRow.appendChild(missionLabel);
+
+    const missionCells = document.createElement("div");
+    missionCells.className = "cells";
+
+    DAYS.forEach(day => {
+      const key = `${week.id}-${day.key}`;
+      const cell = document.createElement("div");
+      cell.className = "cell mission-cell";
+      cell.dataset.key = key;
+
+      const card = document.createElement("div");
+      const value = missions[key] || "";
+      card.className = "mission-card" + (value ? " filled" : "");
+      card.textContent = value || "Cliquer pour ajouter";
+      cell.appendChild(card);
+
+      cell.addEventListener("click", () => openMissionModal(key));
+      missionCells.appendChild(cell);
+    });
+
+    missionRow.appendChild(missionCells);
+    weekEl.appendChild(missionRow);
+
+    /* Ligne faisabilité */
+    const feasibleRow = document.createElement("div");
+    feasibleRow.className = "feasible-row";
+
+    const feasibleLabel = document.createElement("div");
+    feasibleLabel.className = "row-label";
+    feasibleLabel.innerHTML = "🟡 FAISABILITÉ";
+    feasibleRow.appendChild(feasibleLabel);
+
+    const feasibleCells = document.createElement("div");
+    feasibleCells.className = "cells";
+
+    DAYS.forEach(day => {
+      const key = `${week.id}-${day.key}`;
+      const cell = document.createElement("div");
+      cell.className = "cell feasible-cell" + (feasibility[key] ? " active" : "");
+      cell.dataset.key = key;
+      cell.title = feasibility[key]
+        ? "Jour faisable — cliquer pour désactiver"
+        : "Cliquer pour déclarer ce jour faisable";
+
+      const box = document.createElement("div");
+      box.className = "feasible-box";
+      box.innerHTML = feasibility[key] ? "✓ FAISABLE" : "＋ DISPONIBLE";
+
+      cell.appendChild(box);
+
+      cell.addEventListener("click", () => toggleFeasibility(key));
+      feasibleCells.appendChild(cell);
+    });
+
+    feasibleRow.appendChild(feasibleCells);
+    weekEl.appendChild(feasibleRow);
+
+    const help = document.createElement("div");
+    help.className = "feasible-help";
+    help.textContent = "🟡 Les cases jaunes indiquent simplement les jours où la mission peut être réalisée.";
+    weekEl.appendChild(help);
+
+    root.appendChild(weekEl);
+  });
+}
+
+/* =========================================================
+   6. FAISABILITÉ
+   ========================================================= */
+
+function toggleFeasibility(key){
+  feasibility[key] = !feasibility[key];
+  saveAll();
+  renderBoard();
+  updateStats();
+
+  if(feasibility[key]){
+    showToast("Jour marqué comme faisable 🟡");
+  }else{
+    showToast("Jour retiré de la période de faisabilité");
+  }
+}
+
+/* =========================================================
+   7. MODALE MISSION
+   ========================================================= */
+
+function openMissionModal(key){
+  currentCell = key;
+  const input = document.getElementById("missionInput");
+  const title = document.getElementById("modalTitle");
+  const sub = document.getElementById("modalSub");
+
+  const parts = key.split("-");
+  const weekId = parts[0];
+  const dayKey = parts[1];
+  const week = weeks.find(w => w.id === weekId);
+  const day = DAYS.find(d => d.key === dayKey);
+
+  title.textContent = missions[key] ? "Modifier la mission" : "Ajouter une mission";
+  sub.textContent = `${week ? week.label : ""} • ${day ? day.full : ""}`;
+  input.value = missions[key] || "";
+
+  document.getElementById("deleteBtn").style.display = missions[key] ? "inline-flex" : "none";
+
+  document.getElementById("modalBackdrop").classList.add("open");
+  setTimeout(() => input.focus(), 50);
+}
+
+function closeMissionModal(){
+  document.getElementById("modalBackdrop").classList.remove("open");
+  currentCell = null;
+}
+
+function saveMission(){
+  if(!currentCell) return;
+
+  const value = document.getElementById("missionInput").value.trim();
+
+  if(value){
+    missions[currentCell] = value;
+    feasibility[currentCell] = true;
+    showToast("Mission enregistrée • jour automatiquement faisable 🟡");
+  }else{
+    delete missions[currentCell];
+    delete feasibility[currentCell];
+    showToast("Mission supprimée");
+  }
+
+  saveAll();
+  closeMissionModal();
+  renderBoard();
+  updateStats();
+}
+
+function deleteMission(){
+  if(!currentCell) return;
+  delete missions[currentCell];
+  delete feasibility[currentCell];
+  saveAll();
+  closeMissionModal();
+  renderBoard();
+  updateStats();
+  showToast("Mission supprimée");
+}
+
+/* =========================================================
+   8. STATISTIQUES
+   ========================================================= */
+
+function updateStats(){
+  const missionCount = missionKeys().length;
+  const feasibleCount = feasibilityKeys().length;
+
+  let plannedCount = 0;
+  allDayKeys().forEach(key => {
+    if(missions[key]) plannedCount++;
+  });
+
+  const totalDays = allDayKeys().length;
+  const coverage = totalDays ? Math.round((feasibleCount / totalDays) * 100) : 0;
+
+  document.getElementById("missionCount").textContent = missionCount;
+  document.getElementById("feasibleCount").textContent = feasibleCount;
+  document.getElementById("plannedCount").textContent = plannedCount;
+  document.getElementById("coverage").textContent = `${coverage}%`;
+
+  document.getElementById("progressText").textContent = `${coverage}%`;
+  document.getElementById("progressBar").style.width = `${coverage}%`;
+}
+
+/* =========================================================
+   9. RÉINITIALISATION
+   ========================================================= */
+
+function resetPlanning(){
+  const ok = confirm(
+    "Réinitialiser le planning ?\n\n" +
+    "Les missions et les jours faisables ajoutés/modifiés seront remplacés " +
+    "par le planning initial."
+  );
+
+  if(!ok) return;
+
+  missions = {...initialMissions};
+  feasibility = {};
+
+  Object.keys(missions).forEach(key => feasibility[key] = true);
+
+  saveAll();
+  renderBoard();
+  updateStats();
+  showToast("Planning réinitialisé");
+}
+
+/* =========================================================
+   10. BOUTON AUJOURD'HUI
+   ========================================================= */
+
+function goToday(){
+  const now = new Date();
+  const day = now.getDay();
+
+  const map = {1:"mon",2:"tue",3:"wed",4:"thu",5:"fri"};
+  const todayKey = map[day];
+
+  if(!todayKey){
+    showToast("Aujourd’hui tombe un week-end");
+    return;
+  }
+
+  const target = document.querySelector(`[data-key$="-${todayKey}"]`);
+
+  if(target){
+    target.scrollIntoView({behavior:"smooth",block:"center"});
+    target.animate(
+      [
+        {transform:"scale(1)",boxShadow:"none"},
+        {transform:"scale(1.035)",boxShadow:"0 0 0 6px rgba(255,216,61,.28)"},
+        {transform:"scale(1)",boxShadow:"none"}
+      ],
+      {duration:700,easing:"ease-out"}
+    );
+    showToast("Voici la colonne correspondant à aujourd’hui");
+  }else{
+    showToast("Aujourd’hui n’est pas présent dans le planning");
+  }
+}
+
+/* =========================================================
+   11. IMPRESSION
+   ========================================================= */
+
+function printPlanning(){
+  window.print();
+}
+
+/* =========================================================
+   12. ÉVÉNEMENTS
+   ========================================================= */
+
+document.getElementById("search").addEventListener("input", renderBoard);
+document.getElementById("weekFilter").addEventListener("change", renderBoard);
+
+document.getElementById("todayBtn").addEventListener("click", goToday);
+document.getElementById("printBtn").addEventListener("click", printPlanning);
+document.getElementById("resetBtn").addEventListener("click", resetPlanning);
+
+document.getElementById("addBtn").addEventListener("click", () => {
+  /*
+    Ajout rapide :
+    on ouvre la première case vide du planning.
+  */
+  const key = allDayKeys().find(k => !missions[k]);
+
+  if(key){
+    openMissionModal(key);
+  }else{
+    showToast("Toutes les cases disponibles contiennent déjà une mission");
+  }
+});
+
+document.getElementById("closeModal").addEventListener("click", closeMissionModal);
+document.getElementById("cancelBtn").addEventListener("click", closeMissionModal);
+document.getElementById("saveBtn").addEventListener("click", saveMission);
+document.getElementById("deleteBtn").addEventListener("click", deleteMission);
+
+document.getElementById("modalBackdrop").addEventListener("click", event => {
+  if(event.target.id === "modalBackdrop") closeMissionModal();
+});
+
+document.addEventListener("keydown", event => {
   if(event.key === "Escape"){
-   closeModal();
+    closeMissionModal();
   }
 
-  if(
-   (event.ctrlKey ||
-    event.metaKey) &&
-   event.key.toLowerCase() === "k"
-  ){
-   event.preventDefault();
-
-   document
-    .getElementById(
-     "searchInput"
-    )
-    .focus();
+  if((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k"){
+    event.preventDefault();
+    document.getElementById("search").focus();
   }
 
-  if(
-   (event.ctrlKey ||
-    event.metaKey) &&
-   event.key.toLowerCase() === "s"
-  ){
-   event.preventDefault();
-   save();
+  if((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s"){
+    event.preventDefault();
+    saveAll();
+    showToast("Planning sauvegardé");
   }
- }
-);
+});
 
-/* ================================================================
-   INITIALISATION
-   ================================================================ */
+/* =========================================================
+   13. INITIALISATION
+   ========================================================= */
 
-render();
+function init(){
+  renderWeekFilter();
+  renderBoard();
+  updateStats();
 
-setTimeout(
- () =>
-  showToastMessage(
-   "Mission Control prêt"
-  ),
- 500
-);
+  setTimeout(() => {
+    document.querySelectorAll(".stat").forEach((card,index) => {
+      card.style.animationDelay = `${index * 80}ms`;
+    });
+  },10);
+}
+
+init();
+
+/* =========================================================
+   14. PETITES AMÉLIORATIONS UX
+   ========================================================= */
+
+window.addEventListener("storage", event => {
+  if(event.key === STORAGE_KEY || event.key === FEASIBILITY_KEY){
+    missions = safeLoad(STORAGE_KEY, initialMissions);
+    feasibility = safeLoad(FEASIBILITY_KEY, {});
+    renderBoard();
+    updateStats();
+    showToast("Planning synchronisé");
+  }
+});
+
+/*
+  Le principe d'utilisation est volontairement limité à deux gestes :
+
+  1. CASE MISSION
+     Cliquer sur la case blanche/verte permet d'écrire ou modifier
+     la mission prévue pour ce jour.
+
+  2. CASE FAISABILITÉ
+     Cliquer sur la case "＋ DISPONIBLE" la transforme en case jaune
+     "✓ FAISABLE".
+     Cliquer une seconde fois retire le jaune.
+
+  Exemple :
+     LUN | MAR | MER | JEU | VEN
+     --------------------------------
+     Mission :
+     Test |     |     |     |
+     --------------------------------
+     Faisabilité :
+      🟡 | 🟡  |     |     |
+
+  Le jaune ne signifie donc PAS "mission réalisée".
+  Le jaune signifie uniquement :
+     "ce jour est possible pour réaliser cette mission".
+*/
 </script>
-
 </body>
 </html>
